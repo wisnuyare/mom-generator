@@ -16,6 +16,10 @@ RUN npm ci --only=production && npm cache clean --force
 
 # Build frontend
 FROM base AS frontend-build
+ARG VITE_FIREBASE_PROJECT_ID
+ARG VITE_FIREBASE_API_KEY
+ENV VITE_FIREBASE_PROJECT_ID=$VITE_FIREBASE_PROJECT_ID
+ENV VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY
 COPY web/package*.json ./web/
 WORKDIR /app/web
 RUN npm ci && npm cache clean --force

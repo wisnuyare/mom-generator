@@ -52,7 +52,11 @@ jobs:
         run: gcloud auth configure-docker asia-southeast2-docker.pkg.dev
       
       - name: Build Docker image
-        run: docker build -t $IMAGE .
+        run: |
+          docker build -t $IMAGE \
+            --build-arg VITE_FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} \
+            --build-arg VITE_FIREBASE_API_KEY=${{ secrets.FIREBASE_WEB_API_KEY }} \
+            .
       
       - name: Push Docker image to Artifact Registry
         run: |
