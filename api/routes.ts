@@ -34,7 +34,7 @@ router.post('/generate', authenticateFirebase, async (req, res) => {
     
     res.status(500).json({
       error: 'Internal server error',
-      message: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
+      message: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.message : String(error)) : 'Something went wrong'
     });
   }
 });
