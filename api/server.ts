@@ -8,7 +8,7 @@ import path from 'path';
 import { router } from './routes.js';
 
 const app = express();
-const PORT = process.env.PORT || 8081;
+const PORT = parseInt(process.env.PORT || '8081', 10);
 
 app.use(helmet());
 app.use(cors({
