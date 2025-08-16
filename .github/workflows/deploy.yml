@@ -10,7 +10,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   SERVICE_NAME: mom-gen
   REGION: asia-southeast2
-  IMAGE: asia-southeast2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/wsnwrdna-momgenerator/mom-gen:${{ github.sha }}
+  IMAGE: asia-southeast2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mom-gen/mom-gen:${{ github.sha }}
 
 jobs:
   build-deploy:
@@ -27,6 +27,20 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+      
+      - name: Create Artifact Registry repository if not exists
+        run: |
+          # Check if repository exists, create if it doesn't
+          if ! gcloud artifacts repositories describe mom-gen --location=asia-southeast2 &>/dev/null; then
+            echo "Repository mom-gen not found, creating..."
+            gcloud artifacts repositories create mom-gen \
+              --repository-format=docker \
+              --location=asia-southeast2 \
+              --description="Docker repository for MOM Generator"
+            echo "Repository mom-gen created successfully"
+          else
+            echo "Repository mom-gen already exists"
+          fi
       
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker asia-southeast2-docker.pkg.dev
