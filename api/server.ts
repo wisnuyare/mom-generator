@@ -29,11 +29,16 @@ app.get('/health', (req, res) => {
 });
 
 // Serve static files from the React app build directory
-app.use(express.static(path.join(__dirname, '../web/dist')));
+// In Docker: /app/web/dist, In dev: ../web/dist relative to compiled server
+const isDocker = process.env.NODE_ENV === 'production';
+const staticPath = isDocker ? '/app/web/dist' : path.join(__dirname, '../web/dist');
+const indexPath = isDocker ? '/app/web/dist/index.html' : path.join(__dirname, '../web/dist/index.html');
+
+app.use(express.static(staticPath));
 
 // Handle React routing, return all requests to React app
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../web/dist/index.html'));
+  res.sendFile(indexPath);
 });
 
 const server = app.listen(PORT, '0.0.0.0', () => {
