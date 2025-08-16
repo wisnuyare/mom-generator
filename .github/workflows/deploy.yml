@@ -6,6 +6,12 @@ on:
       - main
       - master
 
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  SERVICE_NAME: mom-gen
+  REGION: asia-southeast2
+  IMAGE: asia-southeast2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mom-gen/mom-gen:${{ github.sha }}
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -22,27 +28,24 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
       
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker asia-southeast2-docker.pkg.dev
+      
+      - name: Build Docker image
+        run: docker build -t $IMAGE .
+      
+      - name: Push Docker image to Artifact Registry
+        run: docker push $IMAGE
+      
       - name: Deploy to Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2
-        with:
-          service: mom-gen
-          region: asia-southeast2
-          source: .
-          env_vars: |
-            PROVIDER=openai
-            MODEL_ID=gpt-4o-mini
-            MAX_TOKENS=700
-            TEMPERATURE=0.2
-            LOG_LEVEL=info
-            CORS_ORIGIN=*
-            ALLOWLIST_EMAILS=wsnwrdna2@gmail.com
-            FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }}
-            FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }}
-            FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }}
-            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-          flags: |
-            --memory=256Mi
-            --cpu=0.25
-            --min-instances=0
-            --max-instances=1
-            --no-allow-unauthenticated
+        run: |
+          gcloud run deploy $SERVICE_NAME \
+            --image $IMAGE \
+            --region $REGION \
+            --platform managed \
+            --memory 256Mi \
+            --cpu 0.25 \
+            --min-instances 0 \
+            --max-instances 1 \
+            --no-allow-unauthenticated \
+            --set-env-vars "PROVIDER=openai,MODEL_ID=gpt-4o-mini,MAX_TOKENS=700,TEMPERATURE=0.2,LOG_LEVEL=info,CORS_ORIGIN=*,ALLOWLIST_EMAILS=wsnwrdna2@gmail.com,FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }},FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"
