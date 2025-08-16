@@ -68,9 +68,11 @@ jobs:
             --image $IMAGE \
             --region $REGION \
             --platform managed \
-            --memory 256Mi \
-            --cpu 0.25 \
+            --memory 512Mi \
+            --cpu 1 \
             --min-instances 0 \
             --max-instances 1 \
             --no-allow-unauthenticated \
+            --timeout 300 \
+            --port 8080 \
             --set-env-vars "PROVIDER=openai,MODEL_ID=gpt-4o-mini,MAX_TOKENS=700,TEMPERATURE=0.2,LOG_LEVEL=info,CORS_ORIGIN=*,ALLOWLIST_EMAILS=wsnwrdna2@gmail.com,FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }},FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }},FIREBASE_PRIVATE_KEY=${{ secrets.FIREBASE_PRIVATE_KEY }},OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}"

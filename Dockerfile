@@ -1,11 +1,6 @@
 FROM node:20-alpine AS base
 WORKDIR /app
 
-# Install dependencies for backend
-FROM base AS backend-deps
-COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
-
 # Build backend
 FROM base AS backend-build
 COPY package*.json ./
@@ -13,6 +8,11 @@ COPY tsconfig.json ./
 RUN npm ci && npm cache clean --force
 COPY api/ ./api/
 RUN npx tsc
+
+# Install production dependencies
+FROM base AS backend-deps
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
 
 # Build frontend
 FROM base AS frontend-build
